@@ -6,19 +6,19 @@ import type {
 } from '@n8n/chat/types';
 
 export async function loadPreviousSession(sessionId: string, options: ChatOptions) {
-	const actualSessionId = JSON.stringify(localStorage.getItem('actualSessionId'));
+	const actualSessionId = localStorage.getItem('actualSessionId');
 	if (actualSessionId === null) {
 		localStorage.setItem('actualSessionId', sessionId);
 	}
 	
-	window.parent.postMessage(actualSessionId, '*');
+	window.parent.postMessage(actualSessionId || sessionId, '*');
 
 	const method = options.webhookConfig?.method === 'POST' ? post : get;
 	return await method<LoadPreviousSessionResponse>(
 		`${options.webhookUrl}`,
 		{
 			action: 'loadPreviousSession',
-			[options.chatSessionKey as string]: actualSessionId,
+			[options.chatSessionKey as string]: actualSessionId || sessionId,
 			...(options.metadata ? { metadata: options.metadata } : {}),
 		},
 		{
